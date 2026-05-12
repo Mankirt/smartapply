@@ -3,6 +3,8 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.database import lifespan
+from app.routes import resume, analyze, history
+
 
 logging.basicConfig(
     level = logging.INFO,
@@ -40,6 +42,10 @@ async def log_requests(request: Request, call_next):
         f"[{duration_ms:.1f}]"
     )
     return response
+
+app.include_router(resume.router, prefix="/api/resume", tags=["resume"])
+app.include_router(analyze.router, prefix="/api/analyze", tags=["analyze"])
+app.include_router(history.router, prefix="/api/history", tags=["history"])
 
 @app.get('/health')
 async def health_check():

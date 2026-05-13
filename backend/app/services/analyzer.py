@@ -46,7 +46,7 @@ Return ONLY a valid JSON object. No markdown, no explanation, no preamble.
     )
 
     raw = response.content[0].text.strip()
-
+    raw = _extract_json(raw)
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
@@ -106,7 +106,7 @@ Return empty array [] if no improvements needed."""
     )
 
     raw = response.content[0].text.strip()
-
+    raw = _extract_json(raw)
     try:
         result = json.loads(raw)
         return result if isinstance(result, list) else []
@@ -156,6 +156,12 @@ async def run_analysis_pipeline(
         "sections": section_analyses,
     }
 
+def _extract_json(raw: str) -> str:
+    raw = raw.strip()
+    if raw.startswith("```"):
+        lines = raw.split("\n")
+        raw = "\n".join(lines[1:-1])
+    return raw.strip()
 
 async def stream_analysis(
     jd_text: str,               

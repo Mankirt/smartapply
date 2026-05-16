@@ -46,6 +46,7 @@ function JDInput({ resume, analyzing, onAnalyzing, onComplete, onError }) {
         <input
           type="text"
           value={companyName}
+          disabled={analyzing}
           onChange={(e) => setCompanyName(e.target.value)}
           placeholder="e.g. Workday, Google, Stripe"
           className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-400 transition-colors"
@@ -60,6 +61,7 @@ function JDInput({ resume, analyzing, onAnalyzing, onComplete, onError }) {
         <input
           type="text"
           value={role}
+          disabled={analyzing}
           onChange={(e) => setRole(e.target.value)}
           placeholder="e.g. Software Engineer II"
           className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-400 transition-colors"
@@ -74,6 +76,7 @@ function JDInput({ resume, analyzing, onAnalyzing, onComplete, onError }) {
         <textarea
           value={jdText}
           onChange={(e) => setJdText(e.target.value)}
+          disabled={analyzing}
           placeholder="Paste the full job description here..."
           className="flex-1 min-h-32 bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700 placeholder-gray-400 resize-none focus:outline-none focus:border-emerald-400 transition-colors"
         />

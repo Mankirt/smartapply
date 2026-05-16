@@ -22,12 +22,14 @@ export const getResume = async (resumeId) => {
 
 // ── Analysis ──
 
-export const analyzeResume = async (resumeId, jdText) => {
-    const response = await api.post('/api/analyze/', {
-        resume_id: resumeId,
-        jd_text: jdText,
-    })
-    return response.data
+export const analyzeResume = async (resumeId, jdText, companyName, role = null) => {
+  const response = await api.post('/api/analyze/', {
+    resume_id: resumeId,
+    jd_text: jdText,
+    company_name: companyName,
+    role: role,
+  })
+  return response.data
 }
 
 // ── History ──

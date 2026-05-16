@@ -52,10 +52,7 @@ async def analyze(
 
     logger.info(f"Analysis started: resume_id={payload.resume_id}")
 
-    # verify resume exists
-    resume = await db.fetchrow(
-        "SELECT * FROM resumes WHERE id = $1", payload.resume_id
-    )
+    resume = await db.fetchrow("SELECT * FROM resumes WHERE id = $1", payload.resume_id)
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -82,12 +79,13 @@ async def analyze(
         similar_sections=similar_sections,
     )
 
-    # persist analysis
+    # save analysis with company + role
     row = await db.fetchrow(
         """
         INSERT INTO analyses
-            (resume_id, jd_text, fit_score, matching_skills, missing_keywords, summary)
-        VALUES ($1, $2, $3, $4, $5, $6)
+            (resume_id, jd_text, fit_score, matching_skills,
+             missing_keywords, summary, company_name, role)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING id, created_at
         """,
         payload.resume_id,
@@ -96,18 +94,43 @@ async def analyze(
         json.dumps(analysis["matching_skills"]),
         json.dumps(analysis["missing_keywords"]),
         analysis["summary"],
+        payload.company_name,
+        payload.role,
     )
 
-    logger.info(f"Analysis complete: id={row['id']}, score={analysis['fit_score']}")
+    analysis_id = row["id"]
+
+    # save all suggestions to DB
+    for section in analysis["sections"]:
+        for suggestion in section["suggestions"]:
+            await db.execute(
+                """
+                INSERT INTO section_suggestions
+                    (analysis_id, section_type, section_title,
+                     similarity_score, original, improved, reason)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                """,
+                analysis_id,
+                section["section_type"],
+                section["section_title"],
+                section["similarity_score"],
+                suggestion["original"],
+                suggestion["improved"],
+                suggestion["reason"],
+            )
+
+    logger.info(f"Analysis complete: id={analysis_id}, score={analysis['fit_score']}")
 
     return AnalysisResponse(
-        id=row["id"],
+        id=analysis_id,
         resume_id=payload.resume_id,
         fit_score=analysis["fit_score"],
         matching_skills=analysis["matching_skills"],
         missing_keywords=analysis["missing_keywords"],
         summary=analysis["summary"],
         sections=analysis["sections"],
+        company_name=payload.company_name,
+        role=payload.role,
         created_at=row["created_at"],
     )
 

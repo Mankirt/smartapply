@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getHistory, getAnalysis } from '../api'
 
-function HistoryPanel({ resumeId, onSelect }) {
+function HistoryPanel({ resumeId, resumeFilename, onSelect }) {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingId, setLoadingId] = useState(null)
@@ -47,9 +47,16 @@ function HistoryPanel({ resumeId, onSelect }) {
             className="flex items-center justify-between bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-lg px-4 py-3 cursor-pointer transition-colors"
           >
             <div className="flex-1 mr-4">
-              <p className="text-gray-600 text-xs truncate">{item.summary}</p>
-              <p className="text-gray-400 text-xs mt-1">
-                {new Date(item.created_at).toLocaleDateString('en-US', {
+              {/* company + role */}
+              <p className="text-gray-800 text-sm font-medium">
+                {item.company_name || 'Unknown company'}
+                {item.role && (
+                  <span className="text-gray-500 font-normal"> · {item.role}</span>
+                )}
+              </p>
+              {/* filename + date */}
+              <p className="text-gray-400 text-xs mt-0.5">
+                {resumeFilename} · {new Date(item.created_at).toLocaleDateString('en-US', {
                   month: 'short', day: 'numeric',
                   hour: '2-digit', minute: '2-digit'
                 })}

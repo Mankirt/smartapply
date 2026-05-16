@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react'
 import { uploadResume } from '../api'
 
-function ResumeUpload({ onUpload, onError }) {
+function ResumeUpload({ onUpload, onError, resume }) {
   const [uploading, setUploading] = useState(false)
-  const [uploaded, setUploaded] = useState(null)
+  const [uploaded, setUploaded] = useState(resume || null)
   const inputRef = useRef(null)
 
   const handleFile = async (file) => {

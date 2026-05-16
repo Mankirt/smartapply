@@ -57,6 +57,7 @@ function App() {
             <ResumeUpload
               onUpload={setResume}
               onError={handleError}
+              resume={resume}
             />
             <JDInput
               resume={resume}

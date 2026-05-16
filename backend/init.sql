@@ -31,6 +31,8 @@ CREATE INDEX IF NOT EXISTS resume_sections_embedding_idx
 CREATE TABLE IF NOT EXISTS analyses (
     id               SERIAL PRIMARY KEY,
     resume_id        INTEGER REFERENCES resumes(id) ON DELETE CASCADE,
+    company_name     TEXT,
+    role             TEXT,
     jd_text          TEXT NOT NULL,
     fit_score        INTEGER CHECK (fit_score >= 0 AND fit_score <= 100),
     matching_skills  JSONB DEFAULT '[]',
@@ -48,4 +50,18 @@ CREATE TABLE IF NOT EXISTS section_reviews (
     edited_content TEXT,
     created_at     TIMESTAMP DEFAULT NOW(),
     UNIQUE (analysis_id, section_type)
+);
+
+
+-- table to persist suggestions
+CREATE TABLE IF NOT EXISTS section_suggestions (
+    id              SERIAL PRIMARY KEY,
+    analysis_id     INTEGER REFERENCES analyses(id) ON DELETE CASCADE,
+    section_type    TEXT NOT NULL,
+    section_title   TEXT NOT NULL,
+    similarity_score FLOAT DEFAULT 0,
+    original        TEXT NOT NULL,
+    improved        TEXT NOT NULL,
+    reason          TEXT NOT NULL,
+    created_at      TIMESTAMP DEFAULT NOW()
 );

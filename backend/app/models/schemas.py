@@ -24,6 +24,8 @@ class ResumeResponse(BaseModel):
 class AnalyzeRequest(BaseModel):
     resume_id: int
     jd_text: str = Field(..., min_length=50)
+    company_name: str = Field(..., min_length=1)
+    role: str | None = None
 
 class BulletSuggestion(BaseModel):
     original: str
@@ -47,6 +49,8 @@ class AnalysisResponse(BaseModel):
     missing_keywords: list[str]
     summary: str
     sections: list[SectionAnalysis]
+    company_name: str | None = None
+    role: str | None = None
     created_at: datetime
 
 
@@ -65,4 +69,6 @@ class AnalysisSummary(BaseModel):
     resume_id: int
     fit_score: int
     summary: str
+    company_name: str | None = None
+    role: str | None = None
     created_at: datetime

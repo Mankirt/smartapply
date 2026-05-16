@@ -104,7 +104,13 @@ function App() {
               >
                 ← New analysis
               </button>
-              <span className="text-gray-400 text-xs">Analysis #{analysis.id}</span>
+              <div className="text-right">
+                <p className="text-gray-800 text-sm font-medium">
+                  {analysis.company_name}
+                  {analysis.role && <span className="text-gray-500 font-normal"> · {analysis.role}</span>}
+                </p>
+                <p className="text-gray-400 text-xs">Analysis #{analysis.id}</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -140,7 +146,7 @@ function App() {
               </button>
             </div>
 
-            <HistoryPanel resumeId={analysis.resume_id} onSelect={setAnalysis} />
+            <HistoryPanel resumeId={analysis.resume_id} resumeFilename={resume?.filename || ''} onSelect={setAnalysis} />
           </div>
         )}
       </main>

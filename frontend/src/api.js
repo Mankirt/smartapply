@@ -51,3 +51,8 @@ export const deleteAnalysis = async (analysisId) => {
     const response = await api.delete(`/api/history/${analysisId}`)
     return response.data
 }
+
+export const getAnalysis = async (analysisId) => {
+  const response = await api.get(`/api/history/${analysisId}`)
+  return response.data
+}

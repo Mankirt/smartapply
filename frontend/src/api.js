@@ -40,13 +40,13 @@ export const getHistory = async (resumeId = null) => {
     return response.data
 }
 
-export const updateSectionReview = async (analysisId, sectionType, status, editedContent = null) => {
-    const response = await api.patch(`/api/history/${analysisId}/review`, {
-        section_type: sectionType,
-        status,
-        edited_content: editedContent,
-    })
-    return response.data
+export const updateSectionReview = async (analysisId, suggestionId, status, editedContent = null) => {
+  const response = await api.patch(`/api/history/${analysisId}/review`, {
+    suggestion_id: suggestionId,
+    status,
+    edited_content: editedContent,
+  })
+  return response.data
 }
 
 export const deleteAnalysis = async (analysisId) => {

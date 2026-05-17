@@ -50,13 +50,16 @@ async def analyze(
     client_ip = request.client.host
     check_rate_limit(client_ip)
 
-    logger.info(f"Analysis started: resume_id={payload.resume_id}")
+    logger.info(f"Analysis started: resume_id={payload.resume_id}, company={payload.company_name}")
 
-    resume = await db.fetchrow("SELECT * FROM resumes WHERE id = $1", payload.resume_id)
+    # verify resume exists
+    resume = await db.fetchrow(
+        "SELECT * FROM resumes WHERE id = $1", payload.resume_id
+    )
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
-    # fetch all resume sections
+    # fetch resume sections
     section_rows = await db.fetch(
         "SELECT * FROM resume_sections WHERE resume_id = $1 ORDER BY order_index",
         payload.resume_id,
@@ -79,12 +82,12 @@ async def analyze(
         similar_sections=similar_sections,
     )
 
-    # save analysis with company + role
+    # persist analysis with company + role + filename
     row = await db.fetchrow(
         """
         INSERT INTO analyses
             (resume_id, jd_text, fit_score, matching_skills,
-            missing_keywords, summary, company_name, role, resume_filename)
+             missing_keywords, summary, company_name, role, resume_filename)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING id, created_at
         """,
@@ -96,7 +99,7 @@ async def analyze(
         analysis["summary"],
         payload.company_name,
         payload.role,
-        resume["filename"],  
+        resume["filename"],
     )
 
     analysis_id = row["id"]
@@ -120,6 +123,37 @@ async def analyze(
                 suggestion["reason"],
             )
 
+    # fetch suggestions back with their DB ids
+    suggestion_rows = await db.fetch(
+        """
+        SELECT * FROM section_suggestions
+        WHERE analysis_id = $1
+        ORDER BY section_type, id
+        """,
+        analysis_id,
+    )
+
+    # rebuild sections with real DB ids
+    sections_with_ids = {}
+    for s in suggestion_rows:
+        key = s["section_type"]
+        if key not in sections_with_ids:
+            sections_with_ids[key] = {
+                "section_type": s["section_type"],
+                "section_title": s["section_title"],
+                "similarity_score": s["similarity_score"],
+                "suggestions": [],
+                "status": "pending",
+            }
+        sections_with_ids[key]["suggestions"].append({
+            "id": s["id"],
+            "original": s["original"],
+            "improved": s["improved"],
+            "reason": s["reason"],
+            "status": "pending",
+            "edited_content": None,
+        })
+
     logger.info(f"Analysis complete: id={analysis_id}, score={analysis['fit_score']}")
 
     return AnalysisResponse(
@@ -129,7 +163,7 @@ async def analyze(
         matching_skills=analysis["matching_skills"],
         missing_keywords=analysis["missing_keywords"],
         summary=analysis["summary"],
-        sections=analysis["sections"],
+        sections=list(sections_with_ids.values()),
         company_name=payload.company_name,
         role=payload.role,
         created_at=row["created_at"],

@@ -1,3 +1,4 @@
+from ast import For
 import json
 import logging
 from anthropic import Anthropic
@@ -77,28 +78,62 @@ def _suggest_section_improvements(
     section_type: str,
     jd_text: str,
 ) -> list[dict]:
-    prompt = f"""You are a resume coach improving a resume section to match a job description.
+    
+    # different prompt for skills vs experience
+    if section_type == "skills":
+        improvement_instruction = """For the skills section, ONLY suggest adding keywords that:
+            1. Appear explicitly in the JD
+            2. Are completely missing from the resume
+            3. Are real technical skills (not soft skills or vague terms)
 
-JOB DESCRIPTION:
-{jd_text[:1500]}
+            If the resume already covers the JD's key technical requirements well — return [].
+            Do NOT suggest rephrasing existing skills. Do NOT suggest soft skills.
+            Only suggest genuinely missing technical keywords as simple clean words.
+            Return skills as simple words or short phrases — no explanations, no parentheses, no context.
+            Good: "Kubernetes", "Apache Kafka", "Redis"
+            Bad: "Kubernetes (for container orchestration)", "Kafka (used for streaming)"
+"""
+    else:
+        improvement_instruction = """For each bullet point that could be stronger, suggest an improvement.
+        Focus on: quantifying impact, using JD keywords naturally, showing scope and scale."""
 
-RESUME SECTION ({section_type.upper()}):
-{section_content}
+    prompt = f"""You are a resume coach improving a resume section to match a job description. Only suggest improvements if a bullet point is genuinely weak.
 
-For each bullet that could be stronger, suggest an improvement.
-Focus on: quantifying impact, using JD keywords naturally, showing scope.
+                JOB DESCRIPTION:
+                {jd_text[:1500]}
 
-Return ONLY a valid JSON array. No markdown, no explanation.
+                RESUME SECTION ({section_type.upper()}):
+                {section_content}
 
-[
-  {{
-    "original": "<exact original bullet>",
-    "improved": "<rewritten version>",
-    "reason": "<one sentence: why this helps for this specific role>"
-  }}
-]
+                {improvement_instruction}
 
-Return empty array [] if no improvements needed."""
+                Return ONLY a valid JSON array. No markdown, no explanation.
+
+                [
+                {{
+                    "original": "<exact original text>",
+                    "improved": "<improved version>",
+                    "reason": "<one sentence: why this helps>"
+                }}
+                ]
+
+                Only suggest improvements if a bullet point is genuinely weak.
+
+                A bullet is weak if it:
+                - Has no measurable impact or numbers when numbers are possible
+                - Uses vague language ("worked on", "helped with", "involved in")
+                - Completely misses relevant JD keywords that would naturally fit
+
+                A bullet is ALREADY GOOD if it:
+                - Has specific numbers, scale, or impact
+                - Uses strong action verbs
+                - Is already relevant to the JD
+
+                Be conservative — if a bullet is already strong, do NOT suggest changes just for the sake of it.
+                If the whole section is already strong, return [].
+
+                For any suggestion you do make, the improved version must be meaningfully better — not just a minor rewording.
+                Lastly try to keep the overall length of the section similar if possible."""
 
     response = client.messages.create(
         model=MODEL,

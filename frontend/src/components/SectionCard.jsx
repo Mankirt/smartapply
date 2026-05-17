@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { updateSectionReview } from '../api'
 
-function BulletSuggestion({ suggestion, analysisId, sectionType }) {
-  const [status, setStatus] = useState('pending')
+function BulletSuggestion({ suggestion, analysisId }) {
+  const [status, setStatus] = useState(suggestion.status || 'pending')
   const [editing, setEditing] = useState(false)
-  const [editedText, setEditedText] = useState(suggestion.improved)
+  const [editedText, setEditedText] = useState(suggestion.edited_content || suggestion.improved)
   const [saving, setSaving] = useState(false)
 
   const save = async (s, content = null) => {
     setSaving(true)
     try {
-      await updateSectionReview(analysisId, sectionType, s, content)
+      await updateSectionReview(analysisId, suggestion.id, s, content)
       setStatus(s)
       if (s === 'edited') setEditing(false)
     } catch (err) {
@@ -127,10 +127,9 @@ function SectionCard({ section, analysisId }) {
             ) : (
               section.suggestions.map((s, i) => (
                 <BulletSuggestion
-                  key={i}
+                  key={s.id || i}
                   suggestion={s}
                   analysisId={analysisId}
-                  sectionType={section.section_type}
                 />
               ))
             )}

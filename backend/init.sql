@@ -42,18 +42,6 @@ CREATE TABLE IF NOT EXISTS analyses (
     created_at       TIMESTAMP DEFAULT NOW()
 );
 
--- Section reviews — Accept/Edit/Ignore decisions
-CREATE TABLE IF NOT EXISTS section_reviews (
-    id             SERIAL PRIMARY KEY,
-    analysis_id    INTEGER REFERENCES analyses(id) ON DELETE CASCADE,
-    section_type   TEXT NOT NULL,
-    status         TEXT NOT NULL CHECK (status IN ('accepted', 'edited', 'ignored')),
-    edited_content TEXT,
-    created_at     TIMESTAMP DEFAULT NOW(),
-    UNIQUE (analysis_id, section_type)
-);
-
-
 -- table to persist suggestions
 CREATE TABLE IF NOT EXISTS section_suggestions (
     id              SERIAL PRIMARY KEY,
@@ -65,4 +53,15 @@ CREATE TABLE IF NOT EXISTS section_suggestions (
     improved        TEXT NOT NULL,
     reason          TEXT NOT NULL,
     created_at      TIMESTAMP DEFAULT NOW()
+);
+
+-- Section reviews — Accept/Edit/Ignore decisions
+CREATE TABLE IF NOT EXISTS section_reviews (
+    id             SERIAL PRIMARY KEY,
+    analysis_id    INTEGER REFERENCES analyses(id) ON DELETE CASCADE,
+    suggestion_id  INTEGER REFERENCES section_suggestions(id) ON DELETE CASCADE,
+    status         TEXT NOT NULL CHECK (status IN ('accepted', 'edited', 'ignored')),
+    edited_content TEXT,
+    created_at     TIMESTAMP DEFAULT NOW(),
+    UNIQUE (analysis_id, suggestion_id)
 );

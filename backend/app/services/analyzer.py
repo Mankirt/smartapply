@@ -6,8 +6,8 @@ from app.config.settings import get_settings
 logger = logging.getLogger(__name__)
 client = Anthropic(api_key=get_settings().anthropic_api_key)
 settings = get_settings()
-MODEL = "claude-sonnet-4-6"
-#MODEL = "claude-haiku-4-5-20251001"  #Cheaper model for testing, switch to Sonnet for best results
+#MODEL = "claude-sonnet-4-6"
+MODEL = "claude-haiku-4-5-20251001"  #Cheaper model for testing, switch to Sonnet for best results
 
 
 def _analyze_fit(

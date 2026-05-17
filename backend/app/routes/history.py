@@ -33,6 +33,7 @@ async def list_analyses(
             summary=r["summary"],
             company_name=r["company_name"],
             role=r["role"],
+            resume_filename=r["resume_filename"], 
             created_at=r["created_at"],
         )
         for r in rows

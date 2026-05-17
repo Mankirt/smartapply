@@ -84,8 +84,8 @@ async def analyze(
         """
         INSERT INTO analyses
             (resume_id, jd_text, fit_score, matching_skills,
-             missing_keywords, summary, company_name, role)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            missing_keywords, summary, company_name, role, resume_filename)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING id, created_at
         """,
         payload.resume_id,
@@ -96,6 +96,7 @@ async def analyze(
         analysis["summary"],
         payload.company_name,
         payload.role,
+        resume["filename"],  
     )
 
     analysis_id = row["id"]

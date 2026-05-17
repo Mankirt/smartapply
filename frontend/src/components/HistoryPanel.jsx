@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getHistory, getAnalysis } from '../api'
 
-function HistoryPanel({ resumeId, resumeFilename, onSelect }) {
+function HistoryPanel({ onSelect }) {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingId, setLoadingId] = useState(null)
@@ -9,7 +9,7 @@ function HistoryPanel({ resumeId, resumeFilename, onSelect }) {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const data = await getHistory(resumeId)
+        const data = await getHistory()   
         setHistory(data)
       } catch (err) {
         console.error(err)
@@ -18,7 +18,7 @@ function HistoryPanel({ resumeId, resumeFilename, onSelect }) {
       }
     }
     fetch()
-  }, [resumeId])
+  }, [])
 
   const handleSelect = async (item) => {
     setLoadingId(item.id)
@@ -32,37 +32,45 @@ function HistoryPanel({ resumeId, resumeFilename, onSelect }) {
     }
   }
 
-  if (loading || history.length < 2) return null
+  if (loading || history.length === 0) return null
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
-      <p className="text-emerald-600 text-xs uppercase tracking-widest font-medium mb-4">
-        Past analyses
-      </p>
-      <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-emerald-600 text-xs uppercase tracking-widest font-medium">
+          Past analyses
+        </p>
+        <span className="text-gray-400 text-xs">{history.length} total</span>
+      </div>
+
+      {/* scrollable — max height ~10 items */}
+      <div className="flex flex-col gap-2 max-h-96 overflow-y-auto pr-1">
         {history.map(item => (
           <div
             key={item.id}
             onClick={() => handleSelect(item)}
-            className="flex items-center justify-between bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-lg px-4 py-3 cursor-pointer transition-colors"
+            className="flex items-center justify-between bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-lg px-4 py-3 cursor-pointer transition-colors flex-shrink-0"
           >
-            <div className="flex-1 mr-4">
+            <div className="flex-1 mr-4 min-w-0">
               {/* company + role */}
-              <p className="text-gray-800 text-sm font-medium">
+              <p className="text-gray-800 text-sm font-medium truncate">
                 {item.company_name || 'Unknown company'}
                 {item.role && (
                   <span className="text-gray-500 font-normal"> · {item.role}</span>
                 )}
               </p>
-              {/* filename + date */}
-              <p className="text-gray-400 text-xs mt-0.5">
-                {resumeFilename} · {new Date(item.created_at).toLocaleDateString('en-US', {
-                  month: 'short', day: 'numeric',
-                  hour: '2-digit', minute: '2-digit'
+              {/* resume filename + date — each item knows its own filename */}
+              <p className="text-gray-400 text-xs mt-0.5 truncate">
+                {item.resume_filename || 'resume.pdf'} · {new Date(item.created_at).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
                 })}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-2 flex-shrink-0">
               {loadingId === item.id && (
                 <svg className="animate-spin h-3 w-3 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

@@ -71,4 +71,5 @@ class AnalysisSummary(BaseModel):
     summary: str
     company_name: str | None = None
     role: str | None = None
+    resume_filename: str | None = None   
     created_at: datetime

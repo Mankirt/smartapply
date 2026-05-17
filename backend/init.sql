@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS analyses (
     company_name     TEXT,
     role             TEXT,
     jd_text          TEXT NOT NULL,
+    resume_filename   TEXT NOT NULL,
     fit_score        INTEGER CHECK (fit_score >= 0 AND fit_score <= 100),
     matching_skills  JSONB DEFAULT '[]',
     missing_keywords JSONB DEFAULT '[]',

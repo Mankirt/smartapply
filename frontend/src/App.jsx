@@ -89,9 +89,12 @@ function App() {
         )}
 
         {!analysis && (
-          <div className="grid grid-cols-2 gap-4">
-            <ResumeUpload onUpload={setResume} onError={handleError} resume={resume} analyzing={analyzing} />
-            <JDInput resume={resume} onAnalyzing={setAnalyzing} onComplete={handleAnalysisComplete} onError={handleError} analyzing={analyzing} />
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <ResumeUpload onUpload={setResume} onError={handleError} resume={resume} analyzing={analyzing} />
+              <JDInput resume={resume} onAnalyzing={setAnalyzing} onComplete={handleAnalysisComplete} onError={handleError} analyzing={analyzing} />
+            </div>
+            <HistoryPanel onSelect={setAnalysis} />
           </div>
         )}
 
@@ -145,8 +148,6 @@ function App() {
                 ↓ Export suggestions
               </button>
             </div>
-
-            <HistoryPanel resumeId={analysis.resume_id} resumeFilename={resume?.filename || ''} onSelect={setAnalysis} />
           </div>
         )}
       </main>

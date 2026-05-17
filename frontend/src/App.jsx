@@ -61,16 +61,19 @@ function App() {
 
       {/* Header */}
       <header className="bg-emerald-100 border-b border-emerald-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-emerald-700 rounded-lg flex items-center justify-center">
+        <div className="max-w-4xl mx-auto flex items-center justify-left gap-6">
+          <button
+            onClick={() => setAnalysis(null)}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity text-left"
+          >
+            <div className="w-8 h-8 bg-emerald-700 rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-emerald-50 text-sm font-bold">S</span>
             </div>
-            <div>
+            <div className="flex flex-col items-start">
               <h1 className="text-emerald-900 font-medium text-lg leading-none">SmartApply</h1>
               <p className="text-emerald-600 text-xs mt-0.5">AI resume fit analyzer</p>
             </div>
-          </div>
+          </button>
 
           {resume && (
             <div className="flex items-center gap-2 bg-white border border-emerald-200 rounded-full px-3 py-1.5">

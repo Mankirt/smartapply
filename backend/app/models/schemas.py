@@ -28,9 +28,12 @@ class AnalyzeRequest(BaseModel):
     role: str | None = None
 
 class BulletSuggestion(BaseModel):
+    id: int | None = None       
     original: str
     improved: str
-    reason: str    
+    reason: str
+    status: str = "pending"     
+    edited_content: str | None = None 
 
 
 class SectionAnalysis(BaseModel):
@@ -38,7 +41,7 @@ class SectionAnalysis(BaseModel):
     section_title: str
     similarity_score: float   
     suggestions: list[BulletSuggestion]
-    status: str = "pending"   # pending | accepted | edited | ignored
+    status: str = "pending"
 
 
 class AnalysisResponse(BaseModel):
@@ -57,9 +60,9 @@ class AnalysisResponse(BaseModel):
 # ── Review (Accept/Edit/Ignore) ──
 
 class SectionReviewUpdate(BaseModel):
-    section_type: str
-    status: str                        # "accepted" | "edited" | "ignored"
-    edited_content: Optional[str] = None  # only set if status == "edited"
+    suggestion_id: int           # which suggestion
+    status: str                  # accepted | edited | ignored
+    edited_content: str | None = None
 
 
 # ── History ──

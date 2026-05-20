@@ -61,7 +61,7 @@ function App() {
 
       {/* Header */}
       <header className="bg-emerald-100 border-b border-emerald-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-left gap-6">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-6">
           <button
             onClick={() => setAnalysis(null)}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity text-left"

@@ -2,7 +2,7 @@
 
 > Upload your resume. Paste a job description. Get an instant fit score, gap analysis, and AI-tailored bullet point suggestions — section by section.
 
-![Demo](docs/demo.gif)
+![Demo](assets/demo.gif)
 
 ---
 
@@ -26,7 +26,7 @@ Review decisions persist — reopen any past analysis and your Accept/Edit/Ignor
 
 | Main page | Analysis results |
 |-----------|-----------------|
-| ![Main](docs/main.png) | ![Analysis](docs/analysis.png) |
+| ![Main](assets/main.png) | ![Analysis](assets/analysis.png) |
 
 ---
 

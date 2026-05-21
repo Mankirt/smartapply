@@ -107,6 +107,12 @@ async def analyze(
     # save all suggestions to DB
     for section in analysis["sections"]:
         for suggestion in section["suggestions"]:
+            # guard — skip if suggestion is not a dict
+            if not isinstance(suggestion, dict):
+                continue
+            if not all(k in suggestion for k in ("original", "improved", "reason")):
+                continue
+                
             await db.execute(
                 """
                 INSERT INTO section_suggestions

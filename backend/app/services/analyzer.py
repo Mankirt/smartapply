@@ -7,8 +7,8 @@ from app.config.settings import get_settings
 logger = logging.getLogger(__name__)
 client = Anthropic(api_key=get_settings().anthropic_api_key)
 settings = get_settings()
-#MODEL = "claude-sonnet-4-6"
-MODEL = "claude-haiku-4-5-20251001"  #Cheaper model for testing, switch to Sonnet for best results
+MODEL = "claude-sonnet-4-6"
+#MODEL = "claude-haiku-4-5-20251001"  #Cheaper model for testing, switch to Sonnet for best results
 
 
 def _analyze_fit(
@@ -91,7 +91,17 @@ def _suggest_section_improvements(
             Only suggest genuinely missing technical keywords as simple clean words.
             Return skills as simple words or short phrases — no explanations, no parentheses, no context.
             Good: "Kubernetes", "Apache Kafka", "Redis"
-            Bad: "Kubernetes (for container orchestration)", "Kafka (used for streaming)"
+            Bad: "Kubernetes (for container orchestration)", "Kafka (used for streaming)
+            Each suggestion MUST follow the exact JSON format below — no plain strings.
+            Return ONLY a JSON array of suggestions, no other text.
+
+            [
+                {{
+                    "original": "<exact original text>",
+                    "improved": "<improved version>",
+                    "reason": "<one sentence: why this helps>"
+                }}
+            ]
 """
     else:
         improvement_instruction = """For each bullet point that could be stronger, suggest an improvement.

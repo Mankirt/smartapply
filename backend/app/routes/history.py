@@ -1,5 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
+from app.services.exporter import generate_suggestions_pdf
 import asyncpg
 import json
 
@@ -153,3 +155,67 @@ async def delete_analysis(
     if not deleted:
         raise HTTPException(status_code=404, detail="Analysis not found")
     return {"ok": True}
+
+@router.get("/{analysis_id}/export")
+async def export_analysis_pdf(
+    analysis_id: int,
+    db: asyncpg.Connection = Depends(get_db),
+):
+    """Export accepted/edited suggestions as a formatted PDF."""
+    analysis = await db.fetchrow(
+        "SELECT * FROM analyses WHERE id = $1", analysis_id
+    )
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analysis not found")
+
+    # fetch suggestions with their review states
+    suggestion_rows = await db.fetch(
+        """
+        SELECT
+            s.id, s.section_type, s.section_title,
+            s.original, s.improved, s.reason,
+            r.status AS review_status,
+            r.edited_content AS review_edited
+        FROM section_suggestions s
+        LEFT JOIN section_reviews r
+            ON r.suggestion_id = s.id AND r.analysis_id = $1
+        WHERE s.analysis_id = $1
+        ORDER BY s.section_type, s.id
+        """,
+        analysis_id,
+    )
+
+    # group by section
+    sections_map = {}
+    for s in suggestion_rows:
+        key = s["section_type"]
+        if key not in sections_map:
+            sections_map[key] = {
+                "section_title": s["section_title"],
+                "suggestions": [],
+            }
+        sections_map[key]["suggestions"].append({
+            "original": s["original"],
+            "improved": s["improved"],
+            "reason": s["reason"],
+            "status": s["review_status"] or "pending",
+            "edited_content": s["review_edited"],
+        })
+
+    # generate PDF
+    pdf_bytes = generate_suggestions_pdf(
+        company_name=analysis["company_name"] or "Unknown Company",
+        role=analysis["role"],
+        resume_filename=analysis["resume_filename"],
+        sections=list(sections_map.values()),
+    )
+
+    filename = f"smartapply_{analysis['company_name'] or analysis_id}.pdf"
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )

@@ -58,3 +58,10 @@ export const getAnalysis = async (analysisId) => {
   const response = await api.get(`/api/history/${analysisId}`)
   return response.data
 }
+
+export const exportAnalysisPdf = async (analysisId) => {
+  const response = await api.get(`/api/history/${analysisId}/export`, {
+    responseType: 'blob',   
+  })
+  return response.data
+}

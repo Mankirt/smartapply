@@ -8,17 +8,17 @@
 
 ## What it does
 
-Most resume analyzers just return a keyword list. SmartApply goes deeper:
+Most resume analyzers return a generic keyword list. SmartApply goes deeper:
 
 1. **Parses** your PDF resume into sections (Experience, Skills, Education, etc.)
-2. **Embeds** each section as a vector using sentence-transformers
-3. **Matches** your resume sections to the JD semantically — not just by keywords
+2. **Embeds** each section as a semantic vector using sentence-transformers
+3. **Matches** resume sections to the JD by meaning — not just keywords
 4. **Scores** overall fit (0–100) and identifies gaps using Claude API
 5. **Suggests** improved bullet points per section, tailored to the specific JD
-6. **Lets you review** each suggestion — Accept, Edit, or Ignore
-7. **Exports** your tailored suggestions as a text file
+6. **Review** each suggestion — Accept, Edit, or Ignore per bullet
+7. **Exports** accepted suggestions as a formatted PDF
 
-Review decisions persist — come back to an analysis anytime and your Accept/Edit/Ignore choices are saved.
+Review decisions persist — reopen any past analysis and your Accept/Edit/Ignore choices are saved exactly as you left them.
 
 ---
 
@@ -70,9 +70,10 @@ A JD requirement for "Kubernetes experience" should match the Skills section spe
 |-------|-----------|
 | Backend | FastAPI, Python 3.12 |
 | Database | PostgreSQL 16 + pgvector |
-| Embeddings | sentence-transformers (all-MiniLM-L6-v2, runs locally) |
+| Embeddings | sentence-transformers (all-MiniLM-L6-v2, runs locally — no API cost) |
 | AI | Claude API (claude-sonnet-4-6) |
-| Frontend | React + Vite + Tailwind CSS |
+| Frontend | React + Vite + Tailwind CSS v4 |
+| PDF Export | ReportLab |
 | Infra | Docker Compose |
 
 ---
@@ -84,6 +85,8 @@ A JD requirement for "Kubernetes experience" should match the Skills section spe
 **Structured output prompting** — Claude is instructed to return only valid JSON. Markdown code fences are stripped before parsing. Invalid responses trigger one retry with a stricter prompt.
 
 **Suggestions persisted to DB** — every bullet suggestion is saved with its own id. Accept/Edit/Ignore decisions are stored per suggestion and reloaded when you revisit an analysis.
+
+**Conservative suggestions** — Claude is prompted to only suggest improvements when a bullet is genuinely weak. If a section is already strong, no suggestions are generated.
 
 **Rate limiting** — the analyze endpoint is rate limited (10 req/min by default) to control Claude API costs.
 
@@ -104,10 +107,6 @@ A JD requirement for "Kubernetes experience" should match the Skills section spe
 ```bash
 git clone https://github.com/YOUR_USERNAME/smartapply
 cd smartapply
-```
-
-Create your environment file:
-```bash
 cp .env.example .env
 ```
 
@@ -129,7 +128,7 @@ This starts PostgreSQL with pgvector and runs the schema automatically.
 ```bash
 cd backend
 python3 -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
@@ -154,6 +153,7 @@ App runs at `http://localhost:5173`
 ```
 smartapply/
 ├── docker-compose.yml
+├── .env.example
 ├── backend/
 │   ├── init.sql                  ← DB schema
 │   ├── requirements.txt
@@ -167,12 +167,13 @@ smartapply/
 │       ├── routes/
 │       │   ├── resume.py         ← upload + fetch
 │       │   ├── analyze.py        ← pipeline + rate limiting
-│       │   └── history.py        ← list, fetch, review, delete
+│       │   └── history.py        ← list, fetch, review, export
 │       └── services/
-│           ├── parser.py         ← PDF → sections
+│           ├── parser.py         ← PDF → sections (section-level chunking)
 │           ├── embeddings.py     ← sentence-transformers
 │           ├── similarity.py     ← pgvector cosine search
-│           └── analyzer.py       ← Claude API integration
+│           ├── analyzer.py       ← Claude API integration
+│           └── exporter.py       ← PDF generation with ReportLab
 └── frontend/
     └── src/
         ├── api.js                ← centralized API client
